@@ -1,0 +1,480 @@
+<template name="companyDetail">
+  <div class="card">
+    {{#with companyData}}
+      {{#if companyData.isSeal}}
+        <div class="card-block">
+          該公司已被金融管理委員會查封！
+          {{#if currentUser.profile.isAdmin}}
+            <a class="btn btn-danger float-right" href="#" data-action="seal">
+              解除查封
+            </a>
+          {{/if}}
+          <div class="row border-grid-body" style="margin-top: 30px;">
+            {{> companyLogList}}
+          </div>
+        </div>
+      {{else}}       
+        <div class="card-block">
+          <h1 class="card-title text-truncate">
+            {{this.companyName}}
+            {{#if currentUser.profile.isAdmin}}
+              <a class="btn btn-danger float-right" href="#" data-action="seal">
+                查封關停
+              </a>
+              <a class="btn btn-warning float-right" href="#" data-action="changeCompanyName">
+                更名
+              </a>
+            {{/if}}
+            {{#if currentUser}}
+              {{#if isFavorite this._id}}
+                <a class="btn btn-primary float-right" href="#" data-action="toggleFavorite" data-toggle-favorite="{{this._id}}">
+                  移除最愛
+                </a>
+              {{else}}
+                <a class="btn btn-primary float-right" href="#" data-action="toggleFavorite" data-toggle-favorite="{{this._id}}">
+                  加入最愛
+                </a>
+              {{/if}}
+            {{/if}}
+          </h1>
+          {{#if showAllTags this.tags}}
+            {{#each tag in this.tags}}
+              <span class="badge badge-default">{{tag}}</span>
+            {{/each}}
+          {{else}}
+            {{#each tag in firstFewTags this.tags}}
+              <span class="badge badge-default">{{tag}}</span>
+            {{/each}}
+            <span class="badge badge-primary" style="cursor: pointer;" data-action="showAllTags">顯示全部標籤</span>
+          {{/if}}
+          <hr />
+          <h2 class="card-subtitle mb-2 text-muted">
+            {{this.chairmanTitle}}：
+            {{>userLink this.chairman}}
+            {{#if isChairman this._id}}
+              <a class="btn btn-primary btn-sm" href="#" data-action="changeChairmanTitle">
+                修改頭銜
+              </a>
+            {{/if}}
+          </h2>
+          <h3>
+            經理人：
+            {{>userLink this.manager}}
+            {{#if isUserId this.manager}}
+              <a class="btn btn-primary btn-sm" href="{{getManageHref this._id}}">
+                經營管理
+              </a>
+              <a class="btn btn-danger btn-sm" href="#" data-action="resignManager">
+                辭去職務
+              </a>
+            {{/if}}
+          </h3>
+          {{#if haveNextSeasonProduct}}
+            <div class="text-success">下季度待上架產品：有</div>
+          {{else}}
+            <div class="text-danger">下季度待上架產品：無</div>
+          {{/if}}
+          <hr />
+          {{> companyDetailTable}}
+        </div>
+      {{/if}}
+    {{else}}
+      <div class="card-block">
+        Loading...
+      </div>
+    {{/with}}
+  </div>
+</template>
+
+<template name="companyDetailTable">
+  <div class="company-detail">
+    <div class="media">
+      <div class="d-sm-flex picture">
+        {{#if this.pictureBig}}
+          <img src="{{this.pictureBig}}" />
+        {{else}}
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/300px-No_image_available.svg.png" />
+        {{/if}}
+      </div>
+      <div class="media-body hidden-sm-down company-description"><h4>角色簡介</h4>{{this.description}}</div>
+    </div>
+    <div class="row border-grid-body" style="margin-top: 15px;">
+      <div class="col-12 border-grid hidden-md-up company-description"><h4>角色簡介</h4>{{this.description}}</div>
+      <div class="col-12 border-grid">
+        <a class="d-block h4" href="#" data-toggle-panel="chart">
+          股價趨勢
+          {{#if isDisplayPanel 'chart'}}
+            <i class="fa fa-folder-open" aria-hidden="true"></i>
+          {{else}}
+            <i class="fa fa-folder" aria-hidden="true"></i>
+          {{/if}}
+        </a>
+      </div>
+      {{#if isDisplayPanel 'chart'}}
+        <div class="col-12 border-grid">
+          {{> companyChart}}
+        </div>
+      {{/if}}
+      <div class="col-12 border-grid">
+        <a class="d-block h4" href="#" data-toggle-panel="numbers">
+          數據資訊
+          {{#if isDisplayPanel 'numbers'}}
+            <i class="fa fa-folder-open" aria-hidden="true"></i>
+          {{else}}
+            <i class="fa fa-folder" aria-hidden="true"></i>
+          {{/if}}
+        </a>
+      </div>
+      {{#if isDisplayPanel 'numbers'}}
+        <div class="col-4 col-md-2 col-lg-2 text-right border-grid">參考價格：</div>
+        <div class="col-8 col-md-4 col-lg-2 text-right border-grid" title="{{this.listPrice}}">
+          $ {{this.listPrice}}
+        </div>
+        <div class="col-4 col-md-2 col-lg-2 text-right border-grid">最後價格：</div>
+        <div class="col-8 col-md-4 col-lg-2 text-right border-grid">
+          <span class="{{priceDisplayClass this.lastPrice this.listPrice}}">$ {{this.lastPrice}}</span>
+        </div>
+        <div class="col-4 col-md-2 col-lg-2 text-right border-grid">參考市值：</div>
+        <div class="col-8 col-md-4 col-lg-2 text-right border-grid">
+          $ {{this.totalValue}}
+        </div>
+        <div class="col-4 col-md-2 col-lg-2 text-right border-grid">本季營利：</div>
+        <div class="col-8 col-md-4 col-lg-2 text-right border-grid">
+          $ {{this.profit}}
+        </div>
+        <div class="col-4 col-md-2 col-lg-2 text-right border-grid">總釋股量：</div>
+        <div class="col-8 col-md-4 col-lg-2 text-right border-grid">
+          {{this.totalRelease}}股
+        </div>
+        <div class="col-4 col-md-2 col-lg-2 text-right border-grid">日成交量：</div>
+        {{> companyTodayDealAmount}}
+      {{/if}}
+      <div class="col-12 border-grid">
+        <a class="d-block h4" href="#" data-toggle-panel="order">
+          交易訂單
+          {{#if isDisplayPanel 'order'}}
+            <i class="fa fa-folder-open" aria-hidden="true"></i>
+          {{else}}
+            <i class="fa fa-folder" aria-hidden="true"></i>
+          {{/if}}
+        </a>
+      </div>
+      {{#if isDisplayPanel 'order'}}
+        {{> companyBuyOrderList}}
+        {{> companySellOrderList}}
+      {{/if}}
+      <div class="col-12 border-grid">
+        <a class="d-block h4" href="#" data-toggle-panel="product">
+          產品中心
+          {{#if isDisplayPanel 'product'}}
+            <i class="fa fa-folder-open" aria-hidden="true"></i>
+          {{else}}
+            <i class="fa fa-folder" aria-hidden="true"></i>
+          {{/if}}
+        </a>
+      </div>
+      {{#if isDisplayPanel 'product'}}
+        {{> companyCurrentProductList}}
+        {{> companyAllPrudctList}}
+      {{/if}}
+      <div class="col-12 border-grid">
+        <a class="d-block h4" href="#" data-toggle-panel="director">
+          董事會
+          {{#if isDisplayPanel 'director'}}
+            <i class="fa fa-folder-open" aria-hidden="true"></i>
+          {{else}}
+            <i class="fa fa-folder" aria-hidden="true"></i>
+          {{/if}}
+        </a>
+      </div>
+      {{#if isDisplayPanel 'director'}}
+        {{> companyDirectorList}}
+        {{> companyElectInfo}}
+      {{/if}}
+      <div class="col-12 border-grid">
+        <a class="d-block h4" href="#" data-toggle-panel="log">
+          所有紀錄
+          {{#if isDisplayPanel 'log'}}
+            <i class="fa fa-folder-open" aria-hidden="true"></i>
+          {{else}}
+            <i class="fa fa-folder" aria-hidden="true"></i>
+          {{/if}}
+        </a>
+      </div>
+      {{#if isDisplayPanel 'log'}}
+        {{> companyLogList}}
+      {{/if}}
+    </div>
+  </div>
+</template>
+
+<template name="companyChart">
+  <div class="row" style="padding-top: 10px;">
+    <div class="col chart" style="overflow: hidden;"></div>
+    <div class="col" style="max-width: 80px;">
+      <div class="btn-group-vertical d-flex" role="group">
+        <button type="button" class="btn btn-secondary btn-sm active" data-chart-type="trend">走勢</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-chart-type="day">日K</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-chart-type="60min">60分</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-chart-type="30min">30分</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-chart-type="10min">10分</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-chart-type="5min">5分</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name="companyTodayDealAmount">
+  <div class="col-8 col-md-4 col-lg-2 text-right border-grid">
+    {{getTodayDealAmount}} 股
+  </div>
+</template>
+
+<template name="companyBuyOrderList">
+  <div class="col-12 col-md-6 border-grid">
+    <h4>
+      市場買單
+      {{#if currentUser}}
+        <button class="btn btn-info btn-sm" type="button" data-action="createBuyOrder">
+          下單
+        </button>
+      {{/if}}
+    </h4>
+    {{#each order in myOrderList}}
+      <div>
+        {{>userLink order.userId}}
+        以${{order.unitPrice}}單價{{order.orderType}}數量{{minus order.amount order.done}}。
+        <button class="btn btn-danger btn-sm" type="button" data-cancel-order="{{order._id}}">
+          取消訂單
+        </button>
+      </div>
+    {{/each}}
+    {{#each order in orderList}}
+      <div>
+        {{>userLink order.userId}}
+        以${{order.unitPrice}}單價{{order.orderType}}數量{{minus order.amount order.done}}。
+      </div>
+    {{/each}}
+    {{#with paginationData}}
+      {{> pagination}}
+    {{/with}}
+  </div>
+</template>
+
+<template name="companySellOrderList">
+  <div class="col-12 col-md-6 border-grid">
+    <h4>
+      市場賣單
+      {{#if getStockAmount this._id}}
+        <button class="btn btn-info btn-sm" type="button" data-action="createSellOrder">
+          下單
+        </button>
+      {{/if}}
+    </h4>
+    {{#each order in myOrderList}}
+      <div>
+        {{>userLink order.userId}}
+        以${{order.unitPrice}}單價{{order.orderType}}數量{{minus order.amount order.done}}。
+        <button class="btn btn-danger btn-sm" type="button" data-cancel-order="{{order._id}}">
+          取消訂單
+        </button>
+      </div>
+    {{/each}}
+    {{#each order in orderList}}
+      <div>
+        {{>userLink order.userId}}
+        以${{order.unitPrice}}單價{{order.orderType}}數量{{minus order.amount order.done}}。
+      </div>
+    {{/each}}
+    {{#with paginationData}}
+      {{> pagination}}
+    {{/with}}
+  </div>
+</template>
+
+<template name="companyCurrentProductList">
+  <div class="col-12 col-md-6 border-grid">
+    <h4>
+      當季產品
+    </h4>
+    <div class="row mb-1">
+      <div class="col-9 text-center">產品名稱</div>
+      <div class="col-3 text-center">投票</div>
+    </div>
+    {{#each product in productList}}
+      <div class="row mb-1">
+        <div class="col-9 text-truncate">
+          {{>productLink product._id}}
+        </div>
+        <div class="col-3 text-center">
+          <button class="btn btn-primary btn-sm" type="button" data-vote-product="{{product._id}}">
+            {{product.votes}}
+            <i class="fa fa-money" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+    {{else}}
+      <div class="text-center">
+        沒有任何產品！
+      </div>
+    {{/each}}
+  </div>
+</template>
+
+<template name="companyAllPrudctList">
+  <div class="col-12 col-md-6 border-grid">
+    <h4>
+      暢銷產品排行
+    </h4>
+    <div class="row mb-1">
+      <div class="col-9 text-center">產品名稱</div>
+      <div class="col-3 text-center">投票</div>
+    </div>
+    {{#each product in productList}}
+      <div class="row mb-1">
+        <div class="col-9 text-truncate">
+          {{>productLink product._id}}
+        </div>
+        <div class="col-3 text-center">
+          <button class="btn btn-primary btn-sm" type="button" data-like-product="{{product._id}}">
+            {{product.likeCount}}
+            <i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+    {{else}}
+      <div class="text-center">
+        沒有任何產品！
+      </div>
+    {{/each}}
+    <a class="h6 text-info float-right" href="{{productCenterHref}}">
+      更多...
+    </a>
+  </div>
+</template>
+
+<template name="companyDirectorList">
+  <div class="col-12 border-grid">
+    <div class="row mb-1">
+      <div class="text-center" style="width: 120px;">使用者帳號</div>
+      <div class="text-center" style="width: 80px;">股份數</div>
+      <div class="text-center" style="width: 80px;">比例</div>
+      <div class="col text-center">留言</div>
+    </div>
+    {{#each director in directorList}}
+      <div class="row mb-1">
+        <div
+          class="text-left text-truncate"
+          style="width: 120px; padding-left: 5px;"
+        >
+          {{>userLink director.userId}}
+        </div>
+        <div class="text-right"
+          style="width: 80px; padding-right: 5px;"
+          title="{{director.stocks}}"
+        >
+          {{director.stocks}}
+        </div>
+        <div class="text-right"
+          style="width: 80px; padding-right: 5px;"
+          title="{{getPercentage director.stocks}} %"
+        >
+          {{getPercentage director.stocks}} %
+        </div>
+        <div class="col text-left" title="{{getMessage director.message}}">
+          {{getMessage director.message}}
+        </div>
+      </div>
+    {{else}}
+      <div class="text-center">
+        沒有任何董事！
+      </div>
+    {{/each}}
+    {{#with paginationData}}
+      {{> pagination}}
+    {{/with}}
+    {{#if getStockAmount this._id}}
+      <form>
+        <div class="form-group">
+          <div class="input-group">
+            <span class="input-group-addon">董事會留言</span>
+            <input
+              class="form-control"
+              type="text"
+              name="message"
+              placeholder="身為董事會成員，你可以留下一則不超過一百個字的留言，同一時間只能存在一則留言。"
+              maxlength="100"
+              value="{{getMyMessage this._id}}"
+            />
+            <span class="input-group-btn">
+              <button class="btn btn-primary" type="submit">
+                送出
+              </button>
+            </span>
+          </div>
+        </div>
+      </form>
+    {{/if}}
+  </div>
+</template>
+
+<template name="companyElectInfo">
+  <div class="col-12 border-grid">
+    <h4>
+      選舉下個商業季度的負責經理人：
+      {{#if canContendManager}}
+        <button
+          class="btn btn-primary btn-sm"
+          type="button"
+          data-action="contendManager"
+        >
+          我要參選
+        </button>
+      {{/if}}
+    </h4>
+    <div class="row mb-1">
+      <div class="col-2 text-center">候選人</div>
+      <div class="col-2 text-center">董事會支持率</div>
+      <div class="col-8 text-center">支持者</div>
+    </div>
+    {{#each candidate in this.candidateList}}
+      <div class="row mb-1">
+        <div class="col-2 text-left text-truncate">
+          {{>userLink candidate}}
+          {{#if getStockAmount}}
+            <button
+              class="btn btn-primary btn-sm float-right"
+              type="button"
+              data-support-candidate="{{@index}}"
+            >
+              <i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
+            </button>
+          {{/if}}
+        </div>
+        <div class="col-2 text-right">
+          {{getSupportPercentage @index}} %
+        </div>
+        <div class="col-8 text-left text-truncate">
+          {{#each supporter in supportList @index}}
+            {{>userLink supporter}}
+          {{else}}
+            無
+          {{/each}}
+        </div>
+      </div>
+    {{/each}}
+  </div>
+</template>
+
+<template name="companyLogList">
+  <div class="col-12 border-grid">
+    {{#each logData in logList}}
+      {{>displayLog logData}}
+    {{else}}
+      查無資料！
+    {{/each}}
+    {{#with paginationData}}
+      {{> pagination}}
+    {{/with}}
+  </div>
+</template>

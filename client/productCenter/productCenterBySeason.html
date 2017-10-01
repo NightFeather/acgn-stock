@@ -1,0 +1,104 @@
+<template name="productCenterBySeason">
+  <div class="card">
+    <div class="card-block">
+      <h1 class="card-title mb-1">產品中心</h1>
+      <hr />
+      {{> productSeasonNav}}
+      <hr />
+      {{> productListBySeasonTable}}
+    </div>
+  </div>
+</template>
+
+<template name="productSeasonNav">
+  <div class="text-center">
+    <a {{seasonLinkAttrs 'prev'}}>
+      <span aria-hidden="true">&laquo;</span>
+    </a>
+    商業季度：
+    {{formatDateText seasonBegin}}
+    ～
+    {{formatDateText seasonEnd}}
+    <a  {{seasonLinkAttrs 'next'}}>
+      <span aria-hidden="true">&raquo;</span>
+    </a>
+  </div>
+</template>
+
+<template name="productListBySeasonTable">
+  <table class="table-bordered" style="width: 100%; table-layout: fixed;">
+    <thead>
+      <tr>
+        <th class="text-center text-truncate">產品名稱</th>
+        <th class="text-center text-truncate" title="公司名稱">
+          公司名稱
+        </th>
+        <th class="text-center text-truncate" style="width: 120px; cursor: pointer;" title="類別" data-sort="type">
+          類別
+          {{{getSortIcon 'type'}}}
+        </th>
+        <th class="text-center text-truncate" style="width: 120px; cursor: pointer;" title="得票數" data-sort="votes">
+          得票數
+          {{{getSortIcon 'votes'}}}
+        </th>
+        {{#if currentUser.profile.isAdmin}}
+          <th class="text-center" style="width: 70px;" title="下架">
+            得票數
+          </th>
+        {{/if}}
+      </tr>
+    </thead>
+    <tbody>
+      {{#each productList}}
+        {{> productInfoBySeasonTable}}
+      {{else}}
+        <tr>
+          {{#if currentUser.profile.isAdmin}}
+            <td class="text-center" colspan="5">當季度沒有任何產品上架！</td>
+          {{else}}
+            <td class="text-center" colspan="4">當季度沒有任何產品上架！</td>
+          {{/if}}
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  {{#with paginationData}}
+    {{> pagination}}
+  {{/with}}
+</template>
+
+<template name="productInfoBySeasonTable">
+  <tr>
+    <td class="text-left text-truncate px-2">
+      {{>productLink this._id}}
+    </td>
+    <td class="text-left text-truncate px-2">
+      {{>companyLink this.companyId}}
+    </td>
+    <td class="text-center text-truncate">
+      {{this.type}}
+    </td>
+    <td class="text-center text-truncate px-2">
+      <button
+        class="btn btn-primary btn-sm"
+        type="button"
+        data-vote-product="{{this._id}}"
+        disabled={{cannotVote}}
+      >
+        {{this.votes}}
+        <i class="fa fa-money" aria-hidden="true"></i>
+      </button>
+    </td>
+    {{#if currentUser.profile.isAdmin}}
+      <td class="text-center px-2">
+        <button
+          class="btn btn-danger btn-sm"
+          type="button"
+          data-take-down="{{this._id}}"
+        >
+          下架
+        </button>
+      </td>
+    {{/if}}
+  </tr>
+</template>

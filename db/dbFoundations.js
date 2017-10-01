@@ -2,7 +2,7 @@
 import { Mongo } from 'meteor/mongo';
 import SimpleSchema from 'simpl-schema';
 
-//公司資料集
+//新創資料集
 export const dbFoundations = new Mongo.Collection('foundations');
 export default dbFoundations;
 
@@ -14,7 +14,7 @@ const schema = new SimpleSchema({
     min: 1,
     max: 100
   },
-  //創立人username
+  //創立人userId
   manager: {
     type: String
   },
@@ -31,15 +31,15 @@ const schema = new SimpleSchema({
   //小圖
   pictureSmall: {
     type: String,
-    regEx: /^data:image\/[a-z0-9-+.]+;base64,([A-Za-z0-9!$&',()*+;=\-._~:@/?%\s]*)$/,
-    max: 262144,
+    regEx: SimpleSchema.RegEx.Url,
+    max: 1000,
     optional: true
   },
   //大圖
   pictureBig: {
     type: String,
-    regEx: /^data:image\/[a-z0-9-+.]+;base64,([A-Za-z0-9!$&',()*+;=\-._~:@/?%\s]*)$/,
-    max: 1048576,
+    regEx: SimpleSchema.RegEx.Url,
+    max: 1000,
     optional: true
   },
   //介紹描述
@@ -55,7 +55,7 @@ const schema = new SimpleSchema({
   },
   'invest.$': {
     type: new SimpleSchema({
-      username: {
+      userId: {
         type: String
       },
       amount: {

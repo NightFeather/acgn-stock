@@ -1,0 +1,61 @@
+<template name="productCenterByCompany">
+  <div class="card">
+    <div class="card-block">
+      <h1 class="card-title mb-1">
+        產品中心 - 
+        {{#with companyId}}
+          {{>companyLink}}
+        {{/with}}
+      </h1>
+      <hr />
+      {{> productListByCompanyTable}}
+    </div>
+  </div>
+</template>
+
+<template name="productListByCompanyTable">
+  <table class="table-bordered" style="width: 100%; table-layout: fixed;">
+    <thead>
+      <tr>
+        <th class="text-center text-truncate" title="產品名稱">產品名稱</th>
+        <th class="text-center text-truncate" style="width: 120px; cursor: pointer;" title="類別" data-sort="type">
+          類別
+          {{{getSortIcon 'type'}}}
+        </th>
+        <th class="text-center text-truncate" style="width: 120px; cursor: pointer;" title="股東評價" data-sort="likeCount">
+          股東評價
+          {{{getSortIcon 'likeCount'}}}
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each product in productList}}
+        <tr>
+          <td class="text-left text-truncate px-2">
+            {{>productLink product._id}}
+          </td>
+          <td class="text-center text-truncate">
+            {{product.type}}
+          </td>
+          <td class="text-center text-truncate px-2">
+            <button
+              class="btn btn-primary btn-sm"
+              type="button"
+              data-like-product="{{product._id}}"
+            >
+              {{product.likeCount}}
+              <i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
+            </button>
+          </td>
+        </tr>
+      {{else}}
+        <tr>
+          <td class="text-center text-truncate" colspan="4">這家公司尚未推出任何產品！</td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  {{#with paginationData}}
+    {{> pagination}}
+  {{/with}}
+</template>

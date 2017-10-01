@@ -1,8 +1,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <title>PTT ACGN股票交易市場</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous" />
+  <title>ACGN股票交易市場</title>
+  <link id="boostrap-theme" rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
   <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png" />
   <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png" />
@@ -22,6 +22,8 @@
   <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
   <meta name="theme-color" content="#ffffff" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.min.js" integrity="sha256-VNbX9NjQNRW+Bk02G/RO6WiTKuhncWI4Ey7LkSbE+5s=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.10.0/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/techan.js/0.8.0/techan.js"></script>
 </head>
 <body>
   {{> layout}}
@@ -29,11 +31,15 @@
 </body>
 
 <template name="layout">
-  <div class="container">
+  <div id="main" class={{containerClass}}>
     {{> nav}}
     {{> Template.dynamic template=currentPage}}
   </div>
-  {{#if showLoginDialog}}
-    {{> validateDialog}}
+  {{> footer}}
+  {{#if showAccountDialog}}
+    {{> accountDialog}}
+  {{/if}}
+  {{#if showAlertDialog}}
+    {{> alertDialog}}
   {{/if}}
 </template>

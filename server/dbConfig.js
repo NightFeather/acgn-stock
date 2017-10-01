@@ -1,18 +1,8 @@
 'use strict';
-import { Meteor } from 'meteor/meteor';
-import { config } from '../config';
-import { dbConfig } from '../db/dbConfig';
+import { dbVariables } from '../db/dbVariables';
 
-if (! dbConfig.findOne()) {
-  dbConfig.insert({
-    validateUserUrl: 'https://www.ptt.cc/bbs/C_Chat/M.1500602797.A.256.html',
-    validateUserBoardName: 'C_Chat',
-    validateUserAID: '#1PSM6j9M',
-    currentSeasonStartDate: new Date(),
-    currentSeasonEndDate: new Date(Date.now() + config.seasonTime)
-  });
+if (! dbVariables.initialized()) {
+  dbVariables.set('validateUserUrl', 'https://www.ptt.cc/bbs/C_Chat/M.1501484745.A.B15.html');
+  dbVariables.set('validateUserBoardName', 'C_Chat');
+  dbVariables.set('validateUserAID', '#1PVjR9iL');
 }
-
-Meteor.publish('dbConfig', function () {
-  return dbConfig.find();
-});

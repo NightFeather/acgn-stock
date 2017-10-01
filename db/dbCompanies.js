@@ -14,7 +14,7 @@ const schema = new SimpleSchema({
     min: 1,
     max: 100
   },
-  //總經理username
+  //總經理userId
   manager: {
     type: String
   },
@@ -23,6 +23,10 @@ const schema = new SimpleSchema({
     type: String,
     max: 20,
     defaultValue: '董事長'
+  },
+  //董事長userId
+  chairman: {
+    type: String
   },
   //相關搜索用Tag
   tags: {
@@ -37,22 +41,22 @@ const schema = new SimpleSchema({
   //小圖
   pictureSmall: {
     type: String,
-    regEx: /^data:image\/[a-z0-9-+.]+;base64,([A-Za-z0-9!$&',()*+;=\-._~:@/?%\s]*)$/,
-    max: 262144,
+    regEx: SimpleSchema.RegEx.Url,
+    max: 1000,
     optional: true
   },
   //大圖
   pictureBig: {
     type: String,
-    regEx: /^data:image\/[a-z0-9-+.]+;base64,([A-Za-z0-9!$&',()*+;=\-._~:@/?%\s]*)$/,
-    max: 1048576,
+    regEx: SimpleSchema.RegEx.Url,
+    max: 1000,
     optional: true
   },
   //介紹描述
   description: {
     type: String,
     min: 10,
-    max: 1000
+    max: 3000
   },
   //目前總釋出股份
   totalRelease: {
@@ -64,24 +68,39 @@ const schema = new SimpleSchema({
     type: SimpleSchema.Integer,
     min: 0
   },
-  //預估總市值
+  //參考每股單價
+  listPrice: {
+    type: SimpleSchema.Integer,
+    min: 0
+  },
+  //當季已營利
+  profit: {
+    type: SimpleSchema.Integer,
+    min: 0,
+    defaultValue: 0
+  },
+  //參考總市值
   totalValue: {
     type: SimpleSchema.Integer,
     min: 0
   },
-  //選舉經理時的候選者列表
+  //選舉經理時的候選者userId列表
   candidateList: {
     type: Array
   },
   'candidateList.$': {
     type: String
   },
-  //選舉經理時的各候選者的支持董事列表
+  //選舉經理時的各候選者的支持董事userId列表
   voteList: {
-    type: Array,
-    defaultValue: [ [] ]
+    type: Array
   },
   'voteList.$': [String],
+  //是否被金管會查封關停
+  isSeal: {
+    type: Boolean,
+    defaultValue: false
+  },
   //公司上市日期
   createdAt: {
     type: Date

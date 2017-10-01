@@ -1,12 +1,12 @@
 <template name="nav">
-  <nav class="navbar navbar-toggleable-md navbar-light bg-faded">
+  <nav id="nav" class="navbar navbar-toggleable-md navbar-light bg-faded">
     {{#if currentUser}}
-      <span class="navbar-brand dropdown" title="當前登入使用者：{{currentUser.username}}">
+      <span class="navbar-brand dropdown" title="當前登入使用者：{{currentUser.profile.name}}">
         <a class="dropdown-toggle" href="#">
           <i class="fa fa-user-o" aria-hidden="true"></i>
-          {{currentUser.username}}
+          {{currentUser.profile.name}}
         </a>
-        <div class="dropdown-menu px-3 text-right" aria-labelledby="navbarDropdownMenuLink">
+        <div class="dropdown-menu px-3 text-right">
           <li title="現有資金：${{currentUser.profile.money}}">
             <span class="float-left">
               <i class="fa fa-usd" aria-hidden="true"></i>
@@ -32,8 +32,19 @@
         </div>
       </span>
     {{else}}
-      <span class="navbar-brand">
-        <a href="#" data-action="login">未登入</a>
+      <span class="navbar-brand dropdown">
+        <a class="dropdown-toggle" href="#">未登入</a>
+        <div class="dropdown-menu px-3 text-right">
+          <a class="d-block" href="#" title="以PTT帳號登入" data-login="PTT">
+            以PTT帳號登入
+          </a>
+          <a class="d-block" href="#" title="以巴哈姆特帳號登入" data-login="Bahamut">
+            以巴哈姆特帳號登入
+          </a>
+          <a class="d-block" href="#" title="以Google帳號登入" data-login="Google">
+            以Google帳號登入
+          </a>
+        </div>
       </span>
     {{/if}}
     <button class="navbar-toggler navbar-toggler-right" type="button">
@@ -43,16 +54,37 @@
       <ul class="navbar-nav">
         {{#navLinkGroup text='交易大廳'}}
           {{> navLink page='instantMessage'}}
-          {{> navLink page='stockSummary'}}
-          {{> navLink page='foundationPlan'}}
-          {{> navLink page='productCenter'}}
+          {{> navLink page='companyList' params=page1}}
+          {{> navLink page='foundationList' params=page1}}
+          {{> navLink page='advertising'}}
+          {{> navLink page='productCenterBySeason' params=seasonParams}}
         {{/navLinkGroup}}
+        {{#if hasFavorite}}
+          {{#navLinkGroup text='我的最愛'}}
+            {{#each companyId in currentUser.favorite}}
+              {{>navCompanyLink companyId}}
+            {{/each}}
+          {{/navLinkGroup}}
+        {{/if}}
         {{#navLinkGroup text='資訊報表'}}
           {{> navLink page='tutorial'}}
-          {{> navLink page='seasonalReport'}}
-          {{> navLink page='accountInfo'}}
+          {{> navLink page='seasonalReport' params=seasonParams}}
+          {{#if currentUser}}
+            {{> navLink page='accountInfo' params=accountInfoParams}}
+          {{/if}}
           {{> navLink page='accuseRecord'}}
         {{/navLinkGroup}}
+        {{#navLinkGroup text='主題配置'}}
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-theme="light" data-action="switch-theme">亮色</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-theme="dark" data-action="switch-theme">暗色</a>
+          </li>
+        {{/navLinkGroup}}
+        <li class="nav-item">
+          <a class="nav-link" href="https://opencollective.com/acgn-stock" target="_blank">捐款贊助</a>
+        </li>
       </ul>
     </div>
   </nav>
@@ -76,5 +108,11 @@
     <a class="nav-link" href="{{getHref}}">
       {{getLinkText}}
     </a>
+  </li>
+</template>
+
+<template name="navCompanyLink">
+  <li class="nav-item">
+    <a class="nav-link"></a>
   </li>
 </template>

@@ -1,119 +1,220 @@
 <template name="accountInfo">
   <div class="card">
-    <div class="card-block">
-      <h1 class="card-title mb-1">帳號資訊</h1>
-      <hr />
-      {{> accountInfoSearchForm}}
-      <hr />
-    </div>
-    {{> accountInfoBasic}}
-    {{> accountInfoLogList}}
+    {{#with lookUser}}
+      {{> accountInfoBasic}}
+      <div class="card-block">
+        <div class="row border-grid-body" style="margin-top: 15px;">
+          <div class="col-12 border-grid">
+            <a class="d-block h4" href="#" data-toggle-panel="tax">
+              稅務資訊
+              {{#if isDisplayPanel 'tax'}}
+                <i class="fa fa-folder-open" aria-hidden="true"></i>
+              {{else}}
+                <i class="fa fa-folder" aria-hidden="true"></i>
+              {{/if}}
+            </a>
+          </div>
+          {{#if isDisplayPanel 'tax'}}
+            {{> accountInfoTaxList}}
+          {{/if}}
+          <div class="col-12 border-grid">
+            <a class="d-block h4" href="#" data-toggle-panel="stock">
+              持股資訊
+              {{#if isDisplayPanel 'stock'}}
+                <i class="fa fa-folder-open" aria-hidden="true"></i>
+              {{else}}
+                <i class="fa fa-folder" aria-hidden="true"></i>
+              {{/if}}
+            </a>
+          </div>
+          {{#if isDisplayPanel 'stock'}}
+            {{> accountInfoOwnStockList}}
+          {{/if}}
+          <div class="col-12 border-grid">
+            <a class="d-block h4" href="#" data-toggle-panel="log">
+              所有紀錄
+              {{#if isDisplayPanel 'log'}}
+                <i class="fa fa-folder-open" aria-hidden="true"></i>
+              {{else}}
+                <i class="fa fa-folder" aria-hidden="true"></i>
+              {{/if}}
+            </a>
+          </div>
+          {{#if isDisplayPanel 'log'}}
+            {{> accountInfoLogList}}
+          {{/if}}
+        </div>
+      </div>
+    {{/with}}
   </div>
 </template>
 
-<template name="accountInfoSearchForm">
-  <form class="form-inline">
+<template name="accountInfoBasic">
+  <div class="card-block">
+    <h1 class="card-title mb-1">使用者「{{this.profile.name}}」的帳號資訊：</h1>
+    <hr />
     {{#if currentUser}}
-      <div class="form-check mr-3">
-        <label class="form-check-label">
-          <input
-            class="form-check-input"
-            type="radio"
-            name="lookMode"
-            value="self"
-            checked="{{isInLookMode 'self'}}"
-          />
-          查詢自己日誌
-        </label>
-      </div>
-      <div class="form-check mr-3">
-        <label class="form-check-label">
-          <input
-            class="form-check-input"
-            type="radio"
-            name="lookMode"
-            value="other"
-            checked="{{isInLookMode 'other'}}"
-          />
-          查詢他人日誌
-        </label>
+      {{#if currentUser.profile.isAdmin}}
+        {{#if isBaned 'accuse'}}
+          <button class="btn btn-success btn-sm" type="button" data-ban="accuse">解除舉報禁令</button>
+        {{else}}
+          <button class="btn btn-warning btn-sm" type="button" data-ban="accuse">禁止舉報</button>
+        {{/if}}
+        {{#if isBaned 'deal'}}
+          <button class="btn btn-success btn-sm" type="button" data-ban="deal">解除下單禁令</button>
+        {{else}}
+          <button class="btn btn-warning btn-sm" type="button" data-ban="deal">禁止下單</button>
+        {{/if}}
+        {{#if isBaned 'chat'}}
+          <button class="btn btn-success btn-sm" type="button" data-ban="chat">解除聊天禁令</button>
+        {{else}}
+          <button class="btn btn-warning btn-sm" type="button" data-ban="chat">禁止聊天</button>
+        {{/if}}
+        {{#if isBaned 'advertise'}}
+          <button class="btn btn-success btn-sm" type="button" data-ban="advertise">解除廣告禁令</button>
+        {{else}}
+          <button class="btn btn-warning btn-sm" type="button" data-ban="advertise">禁止廣告</button>
+        {{/if}}
+        <button class="btn btn-warning btn-sm" type="button" data-action="forfeit">課以罰金</button>
+        <button class="btn btn-warning btn-sm" type="button" data-action="returnForfeit">退還罰金</button>
+        {{#if isBaned 'manager'}}
+          <button class="btn btn-success btn-sm" type="button" data-ban="manager">解除禁任經理</button>
+        {{else}}
+          <button class="btn btn-danger btn-sm" type="button" data-ban="manager">禁任經理</button>
+        {{/if}}
+        <button class="btn btn-danger btn-sm" type="button" data-action="confiscateStocks">沒收股份</button>
+      {{else}}
+        <button class="btn btn-danger btn-sm" type="button" data-action="accuse">舉報違規</button>
+        {{#if isBaned 'accuse'}}
+          <div class="text-danger">目前被禁止舉報違規。</div>
+        {{/if}}
+        {{#if isBaned 'deal'}}
+          <div class="text-danger">目前被禁止投資下單。</div>
+        {{/if}}
+        {{#if isBaned 'chat'}}
+          <div class="text-danger">目前被禁止聊天發言。</div>
+        {{/if}}
+        {{#if isBaned 'advertise'}}
+          <div class="text-danger">目前被禁止廣告宣傳。</div>
+        {{/if}}
+      {{/if}}
+      <hr />
+    {{/if}}
+    <div>
+      帳號驗證方式：
+      {{showValidateType}}
+    </div>
+    <div>
+      帳號啟動日期：{{formatDateText this.createdAt}}
+    </div>
+    <div>
+      上次登入時間：{{formatDateText this.status.lastLogin.date}}
+    </div>
+    <div>
+      上次登入IP：{{this.status.lastLogin.ipAddr}}
+    </div>
+    <div>
+      本季度未登入天數：{{this.profile.noLoginDayCount}}
+    </div>
+    <div>
+      上季度財富統計：{{this.profile.lastSeasonTotalWealth}}
+    </div>
+    <div>
+      帳號當前餘額：{{this.profile.money}}
+    </div>
+    <div>
+      帳號剩餘推薦票：{{this.profile.vote}}
+    </div>
+    <div>
+      帳號擁有聖晶石：{{this.profile.stone}}
+    </div>
+    {{#if this.profile.isAdmin}}
+      <div class="text-warning">
+        是金融管理會委員。
       </div>
     {{/if}}
-    <div class="input-group">
-      <input
-        class="form-control"
-        style="width: 250px"
-        type="text"
-        name="searchUsername"
-        value="{{searchUsername}}"
-        placeholder="請輸入要查詢日誌的帳號名稱"
-      />
-      <span class="input-group-btn">
-        <button type="submit" class="btn btn-primary">
-          <i class="fa fa-search" aria-hidden="true"></i>
-          查詢
-        </button>
-      </span>
-    </div>
-  </form>
+    {{#if this.profile.revokeQualification}}
+      <div class="text-danger">
+        被撤銷了擔任經理人的資格！
+      </div>
+    {{/if}}
+    {{#each manageCompanies}}
+      <div class="text-primary">
+        是「{{>companyLink this._id}}」公司的總經理。
+      </div>
+    {{/each}}
+  </div>
 </template>
 
-<template name="accountInfoBasic">
-  {{#with lookUser}}
-    <div class="card-block">
-      <h2 class="card-title mb-1">使用者「{{this.username}}」的帳號資訊：</h2>
-      <hr />
-      <div>
-        帳號驗證日期：{{formatDateText this.createdAt}}
-      </div>
-      <div>
-        帳號當前餘額：{{lookUser.profile.money}}
-      </div>
-      <div>
-        帳號剩餘推薦票：{{lookUser.profile.vote}}
-      </div>
-      {{#if lookUser.profile.isAdmin}}
-        <div class="text-warning">
-          是股市秩序管理員
-        </div>
-      {{/if}}
-      {{#if lookUser.profile.revokeQualification}}
-        <div class="text-danger">
-          被撤銷了擔任經理人的資格！
-        </div>
-      {{/if}}
-      {{#each manageCompanies this.username}}
-        {{> accountInfoManageCompanyLink}}
-      {{/each}}
-      <hr />
-    </div>
-  {{/with}}
+<template name="accountInfoTaxList">
+  <div class="col-12 border-grid">
+    <table class="table table-bordered mt-3" style="width: 100%; table-layout: fixed;">
+      <thead>
+        <tr>
+          <th class="text-center text-truncate" style="width: 200px">繳稅期限</th>
+          <th class="text-center text-truncate">財稅額</th>
+          <th class="text-center text-truncate">殭屍稅</th>
+          <th class="text-center text-truncate">逾期罰金</th>
+          <th class="text-center text-truncate">已繳納</th>
+          {{#if isCurrentUser}}
+            <th class="text-center text-truncate">繳納稅金</th>
+          {{/if}}
+        </tr>
+      </thead>
+      <tbody>
+        {{#each taxes in taxesList}}
+          <tr>
+            <td class="text-center">{{formatDateText taxes.expireDate}}</td>
+            <td class="text-right">$ {{taxes.tax}}</td>
+            <td class="text-right">$ {{taxes.zombie}}</td>
+            <td class="text-right">$ {{taxes.fine}}</td>
+            <td class="text-right">$ {{taxes.paid}}</td>
+            {{#if isCurrentUser}}
+              <td class="text-center">
+                <button class="btn btn-success btn-sm" type="button" data-pay="{{taxes._id._str}}">
+                  繳納稅金
+                </button>
+              </td>
+            {{/if}}
+          </tr>
+        {{else}}
+          <tr>
+            {{#if isCurrentUser}}
+              <td class="text-center text-truncate" colspan="6">目前沒有任何需要繳納的稅金！</td>
+            {{else}}
+              <td class="text-center text-truncate" colspan="5">目前沒有任何需要繳納的稅金！</td>
+            {{/if}}
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
 </template>
 
-<template name="accountInfoManageCompanyLink">
-  <div class="text-primary">
-    是「
-    <a href="{{getHref this.companyName}}">{{this.companyName}}</a>
-    」公司的總經理。
+<template name="accountInfoOwnStockList">
+  <div class="col-12 border-grid">
+    {{#each directorData in directorList}}
+      <div>
+        擁有 「{{>companyLink directorData.companyId}}」公司的{{directorData.stocks}}股股票。
+      </div>
+    {{else}}
+      查無資料！
+    {{/each}}
+    {{#with paginationData}}
+      {{> pagination}}
+    {{/with}}
   </div>
 </template>
 
 <template name="accountInfoLogList">
-  <div class="card-block">
-    <h2 class="card-title mb-1">所有相關紀錄：</h2>
-    <hr />
+  <div class="col-12 border-grid">
     {{#each logList}}
-      {{> accountInfoLog}}
+      {{> displayLog}}
     {{else}}
       查無資料！
     {{/each}}
-    <a class="h3 d-block text-center" href="#" data-action="more">查看更早之前的紀錄...</a>
-  </div>
-</template>
-
-<template name="accountInfoLog">
-  <div>
-    <span class="text-info d-inline-block text-right" style="width: 220px;">({{formatDateText this.createdAt}})</span>
-    {{{getLogDescriptionHtml this}}}
+    {{#with paginationData}}
+      {{> pagination}}
+    {{/with}}
   </div>
 </template>

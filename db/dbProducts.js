@@ -11,7 +11,8 @@ export const productTypeList = [
   'ANSI',
   '影音',
   '文字',
-  '三次元'
+  '三次元',
+  '裏物'
 ];
 
 //schema
@@ -22,9 +23,19 @@ const schema = new SimpleSchema({
     min: 4,
     max: 255
   },
-  //公司名稱
-  companyName: {
+  //公司Id
+  companyId: {
     type: String
+  },
+  //推出季度
+  seasonId: {
+    type: String
+  },
+  //此產品的狀態。0 => 當季推出產品，1 => 上季推出產品，待投票結算營利中，2 => 過季產品。
+  overdue: {
+    type: Number,
+    allowedValues: [0, 1, 2],
+    defaultValue: 0
   },
   //產品類別
   type: {
@@ -33,16 +44,16 @@ const schema = new SimpleSchema({
   },
   //產品url
   url: {
-    type: SimpleSchema.RegEx.Url
-  },
-  //此產品的狀態。0 => 當季推出產品，1 => 上季推出產品，待投票結算營利中，2 => 過季產品。
-  overdue: {
-    type: Number,
-    allowedValues: [0, 1, 2],
-    defaultValue: 0
+    type: String,
+    regEx: SimpleSchema.RegEx.Url
   },
   //總票數
   votes: {
+    type: SimpleSchema.Integer,
+    defaultValue: 0
+  },
+  //喜愛股東數
+  likeCount: {
     type: SimpleSchema.Integer,
     defaultValue: 0
   },

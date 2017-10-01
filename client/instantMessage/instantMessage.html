@@ -5,9 +5,28 @@
       <hr />
       {{#if currentUser}}
         {{> instantMessageChatForm}}
+        <hr />
       {{/if}}
+      <form>
+        <div class="form-group">
+          篩選器：
+          {{> instantMessageFilterButton type='聊天發言'}}
+          {{> instantMessageFilterButton type='交易相關'}}
+          {{> instantMessageFilterButton type='新創相關'}}
+          {{> instantMessageFilterButton type='競選相關'}}
+          {{> instantMessageFilterButton type='經理管理'}}
+          {{> instantMessageFilterButton type='推薦產品'}}
+          <button class="btn btn-sm btn-danger float-right" type="button" data-action="clearMessage">
+            清除舊訊息
+          </button>
+          <button class="{{isDontInterruptButtonClass}}" type="button" data-action="dontInterrupt">
+            勿擾模式
+          </button>
+        </div>
+        {{> instantMessageFilterById}}
+      </form>
+      {{> instantMessageList}}
     </div>
-    {{> instantMessageList}}
   </div>
 </template>
 
@@ -29,14 +48,80 @@
   </form>
 </template>
 
-<template name="instantMessageList">
-  <div class="card-block">
-    {{#each messageList}}
-      <div>
-        <span class="text-info d-inline-block text-right" style="width: 220px;">({{formatDateText this.createdAt}})</span>
-        {{{getTypeHtml this}}}
-        {{this.message}}
+<template name="instantMessageFilterButton">
+  <button class="{{btnClass}}" type="button">
+    {{btnText}}
+  </button>
+</template>
+
+<template name="instantMessageFilterById">
+  <div class="form-group row">
+    <div class="col" style="max-width: 360px;">
+      <div class="btn-group">
+        <div class="input-group-btn">
+          {{> instantMessageFilterButton type='只看指定使用者或公司'}}
+        </div>
+        <div class="input-group-btn">
+          <button class="btn btn-sm btn-success" data-action="filterUserId">
+            <i class="fa fa-filter" aria-hidden="true"></i>
+            使用者
+          </button>
+        </div>
+        <div class="input-group-btn">
+          <button class="btn btn-sm btn-info text-white" data-action="filterCompanyId">
+            <i class="fa fa-filter" aria-hidden="true"></i>
+            公司
+          </button>
+        </div>
+        {{#if currentUser}}
+          <div class="input-group-btn">
+            <button class="btn btn-sm btn-info text-white" data-action="filterFavorite">
+              <i class="fa fa-heart-o" aria-hidden="true"></i>
+              最愛
+            </button>
+          </div>
+        {{/if}}
       </div>
+    </div>
+    <div class="col">
+      {{#each filterUserId}}
+        {{> instantMessageFilterByUserId}}
+      {{/each}}
+      {{#each filterCompanyId}}
+        {{> instantMessageFilterByCompanyId}}
+      {{/each}}
+    </div>
+  </div>
+</template>
+
+<template name="instantMessageFilterByUserId">
+  <small class="badge badge-success">
+    {{> userLink this}}
+    <i
+      class="fa fa-times"
+      style="cursor: pointer;"
+      data-action="remove"
+    >
+    </i>
+  </small>
+</template>
+
+<template name="instantMessageFilterByCompanyId">
+  <small class="badge badge-info text-white">
+    {{> companyLink this}}
+    <i
+      class="fa fa-times"
+      style="cursor: pointer;"
+      data-action="remove"
+    >
+    </i>
+  </small>
+</template>
+
+<template name="instantMessageList">
+  <div>
+    {{#each logData in logList}}
+      {{>displayLog logData}}
     {{/each}}
   </div>
 </template>
